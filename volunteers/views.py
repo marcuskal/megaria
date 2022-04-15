@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views import View
-from .models import Post, Comment
+from .models import Post, Comment, UserProfile
 from .forms import PostForm, CommentForm
 from django.views.generic.edit import UpdateView, DeleteView
 # Create your views here.
@@ -106,3 +106,93 @@ class CommentDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         post = self.get_object()
         return self.request.user == post.author
+
+
+class ProfileView(View):
+    def get(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        user = profile.user
+        posts = Post.objects.filter(author=user).order_by('-created_on')
+
+        followers = profile.followers.all()
+        if len(followers) == 0:
+            is_following = False
+        else:
+            is_following = True
+
+        for follower in followers:
+            if follower == request.user:
+                is_following = True
+                break
+            else:
+                is_follower = False
+
+        number_of_followers = len(followers)
+
+        context = {
+            'profile': profile,
+            'user': user,
+            'posts': posts,
+            'number_of_followers': number_of_followers,
+            'is_following': is_following
+        }
+
+        return render(request, 'volunteers/profile.html', context)
+
+
+class ProfileEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = UserProfile
+    fields = ['name', 'bio', 'birth_date', 'location', 'picture']
+    template_name = 'volunteers/profile-edit.html'
+
+    def get_success_url(self):
+        pk = self.kwargs['pk']
+        return reverse_lazy('profile', kwargs={'pk': pk})
+
+    def test_func(self):
+        profile = self.get_object()
+        return self.request.user == profile.user
+
+
+class AddFollower(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        profile.followers.add(request.user)
+
+        return redirect('profile', pk=profile.pk)
+
+
+class RemoveFollower(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        profile = UserProfile.objects.get(pk=pk)
+        profile.followers.remove(request.user)
+
+        return redirect('profile', pk=profile.pk)
+
+class AddLike(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        post = Post.objects.get(ph=pk)
+
+        for like in post.likes.all():
+            if like == request.user:
+                is_like = True;
+                break
+        if not is_like:
+            post.likes.add(request.user)
+        if is_like:
+            post.likes.remove(request.user)
+
+class Dislike(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        post = Post.objects.get(pk=pk)
+
+        is_dislike = False
+
+        for dislike in post.dilikes.all():
+            if dislike == request.user:
+                is_dislike = True
+                break
+        if not is_dislike:
+            post.dilikes.add(request.user)
+        if is_dislike:
+            post.dilikes.remove(request.user)
