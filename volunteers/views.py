@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
+from django.db.models import Q
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
 from django.views import View
 from .models import Post, Comment, UserProfile
 from .forms import PostForm, CommentForm
@@ -11,7 +13,11 @@ from django.views.generic.edit import UpdateView, DeleteView
 class PostListView(LoginRequiredMixin, View):
 
     def get(self, request, *args, **kwargs):
-        posts = Post.objects.all().order_by('-created_on')
+        # get the id of the current user
+        logged_in_user = request.user
+        posts = Post.objects.filter(
+            author__profile__followers__in=[logged_in_user.id]
+        ).order_by('-created_on')
         form = PostForm()
         context = {
             'post_list': posts,
@@ -171,7 +177,18 @@ class RemoveFollower(LoginRequiredMixin, View):
 
 class AddLike(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
-        post = Post.objects.get(ph=pk)
+        post = Post.objects.get(pk=pk)
+
+        is_dislike = False
+
+        for dislike in post.dilikes.all():
+            if dislike == request.user:
+                is_dislike = True
+                break 
+        if is_dislike:
+            post.dilikes.remove(request.user)
+
+        is_like = False
 
         for like in post.likes.all():
             if like == request.user:
@@ -181,11 +198,20 @@ class AddLike(LoginRequiredMixin, View):
             post.likes.add(request.user)
         if is_like:
             post.likes.remove(request.user)
-
-class Dislike(LoginRequiredMixin, View):
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
+class AddDislike(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         post = Post.objects.get(pk=pk)
 
+        is_like = False
+        
+        for like in post.likes.all():
+            if like == request.user:
+                is_like = True;
+                break
+        if is_like:
+           post.likes.remove(request.user)
         is_dislike = False
 
         for dislike in post.dilikes.all():
@@ -196,3 +222,18 @@ class Dislike(LoginRequiredMixin, View):
             post.dilikes.add(request.user)
         if is_dislike:
             post.dilikes.remove(request.user)
+        next = request.POST.get('next', '/')
+        return HttpResponseRedirect(next)
+
+class UserSearch(View):
+    def get(self, request, *args, **kwargs):
+        query = self.request.GET.get('query')
+        profile_list = UserProfile.objects.filter(
+            Q(user__username__icontains=query)
+        )
+
+        context = {
+            'profile_list': profile_list,
+        }
+
+        return render(request, 'volunteers/serach.html', context)
