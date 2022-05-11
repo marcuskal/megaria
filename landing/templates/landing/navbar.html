@@ -48,9 +48,9 @@
           
           <a class="nav-link dropdown-toggle text-dark" data-bs-toggle="dropdown" role="buton" aria-expanded="false">
             <i class="fa fa-user"></i>
-          {{ user.username }}</a>
+          {{ request.user.username }}</a>
           <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="{% url 'profile' user.profile.pk %}">Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'profile' request.user.profile.pk %}">Profile</a></li>
             <li><a class="dropdown-item" href="{% url 'account_logout' %}">Sign Out</a></li>
           </ul>
         </div>
