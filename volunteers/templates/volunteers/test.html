@@ -6,7 +6,7 @@
 <div class="container">
     <div class="row mt-5">
         <div class="col-md-5 col-sm-6">
-            <a href="{% url 'post-list' %}" class="btn btn-warning">Back To Feed</a>
+            <a href="{% url 'post-list' %}" class="btn btn-light">Back To Feed</a>
         </div>
     </div>
 
@@ -21,8 +21,8 @@
                     </p>
                 </div>
                 {% if request.user == post.author %}
-                    <a href="{% url 'post-edit' post.pk %}" class="edit-color"><i class="fa fa-edit"></i></a>
-                    <a href="{% url 'post-delete' post.pk %}" class="edit-color"><i class="fa fa-trash"></i></a>
+                    <a href="{% url 'post-edit' post.pk %}" class="edit-color"><i class="far fa-edit"></i></a>
+                    <a href="{% url 'post-delete' post.pk %}" class="edit-color"><i class="fas fa-trash"></i></a>
                 {% endif %}
             <p>{{ post.body }}</p>
 
@@ -31,7 +31,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">
                     <button class="remove-default-btn" type="submit">
-                        <i class="fa fa-thumbs-up"> <span>{{ post.likes.all.count }}</span></i>
+                        <i class="far fa-thumbs-up"> <span>{{ post.likes.all.count }}</span></i>
                     </button>
                 </form>
 
@@ -39,7 +39,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">
                     <button class="remove-default-btn" type="submit">
-                        <i class="fa fa-thumbs-down"> <span>{{ post.dislikes.all.count }}</span></i>
+                        <i class="far fa-thumbs-down"> <span>{{ post.dislikes.all.count }}</span></i>
                     </button>
                 </form>
         </div>
@@ -71,7 +71,7 @@
                     </p>
                 </div>
                 {% if request.user == comment.author %}
-                    <a href="{% url 'comment-delete' post.pk comment.pk %}" class="edit-color"><i class="fa fa-trash"></i></a>
+                    <a href="{% url 'comment-delete' post.pk comment.pk %}" class="edit-color"><i class="fas fa-trash"></i></a>
                 {% endif %}
             </p>
             <p>{{ comment.comment }}</p>
@@ -81,7 +81,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">
                     <button class="remove-default-btn" type="submit">
-                        <i class="fa fa-thumbs-up"> <span>{{ comment.likes.all.count }}</span></i>
+                        <i class="far fa-thumbs-up"> <span>{{ comment.likes.all.count }}</span></i>
                     </button>
                 </form>
 
@@ -89,12 +89,11 @@
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">
                     <button class="remove-default-btn" type="submit">
-                        <i class="fa fa-thumbs-down"> <span>{{ comment.dislikes.all.count }}</span></i>
+                        <i class="far fa-thumbs-down"> <span>{{ comment.dislikes.all.count }}</span></i>
                     </button>
                 </form>
                 <div>
-                    
-                    <button class="remove-default-btn"><i class="fa fa-comment" onclick="commentReplyToggle('{{ comment.pk }}')"><span class="comment-count">{{ comment.children.all.count}}</span></i></button>
+                    <button class="remove-default-btn"><i class="far fa-comment-dots" onclick="commentReplyToggle('{{ comment.pk }}')"></i></button>
                 </div>
         </div>
         </div>
@@ -119,20 +118,13 @@
                     <a href="{% url 'profile' child_comment.author.profile.pk %}">
                         <img class="round-circle post-img" height="30" width="30" src="{{ child_comment.author.profile.picture.url }}" />
                     </a>
-                    <div class="post-text d-flex justify-content-between">
-                    <div>
+                    <p class="post-text">
                         <a class="text-primary post-link" href="{% url 'profile' child_comment.author.profile.pk %}">@{{ child_comment.author }}</a> {{ child_comment.created_on }}
-                    </div>
-                           
-        <div>
-            {% if request.user == child_comment.author %}
-            <a href="{% url 'comment-delete' post.pk child_comment.pk %}" class="edit-color delete-comment-icon"><i class="fa fa-trash"></i></a>
-            {% endif %}
-
-        </div>
-                    </div>
+                    </p>
                 </div>
-               
+                {% if request.user == child_comment.author %}
+                    <a href="{% url 'comment-delete' post.pk child_comment.pk %}" class="edit-color"><i class="fas fa-trash"></i></a>
+                {% endif %}
             </p>
             <p>{{ child_comment.comment }}</p>
         </div>
@@ -142,4 +134,5 @@
     {% endfor %}
 </div>
 
+<script type="text/javascript" src="{% static 'js/social.js' %}">
 {% endblock content %}
