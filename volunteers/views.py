@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views import View
-from .models import Post, Comment, UserProfile, Notification, ThreadModel, MessageModel
+from .models import Post, Comment, UserProfile, Notification, ThreadModel, MessageModel, Image
 from .forms import PostForm, CommentForm, ThreadForm, MessageForm
 from django.views.generic.edit import UpdateView, DeleteView
 # Create your views here.
@@ -25,7 +25,7 @@ class PostListView(LoginRequiredMixin, View):
             'form': form,
         }
 
-        return render(request, 'social/post_list.html', context)
+        return render(request, 'volunteers/post-list.html', context)
 
     def post(self, request, *args, **kwargs):
         logged_in_user = request.user
