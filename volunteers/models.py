@@ -7,11 +7,11 @@ from django.dispatch import receiver
 
 class Post(models.Model):
     body = models.TextField()
-    image = models.ImageField(upload_to = 'uploads/post_photos', blank=True, null=True)
+    image = models.ManyToManyField('Image', blank=True)
     created_on = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     likes = models.ManyToManyField(User, blank=True, related_name='likes')
-    dilikes = models.ManyToManyField(User, blank=True, related_name='dislikes')
+    dislikes = models.ManyToManyField(User, blank=True, related_name='dislikes')
 
 
 
@@ -62,6 +62,7 @@ class Notification(models.Model):
 	from_user = models.ForeignKey(User, related_name='notification_from', on_delete=models.CASCADE, null=True)
 	post = models.ForeignKey('Post', on_delete=models.CASCADE, related_name='+', blank=True, null=True)
 	comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='+', blank=True, null=True)
+	thread = models.ForeignKey('ThreadModel', on_delete=models.CASCADE, related_name='+', blank=True, null=True)
 	date = models.DateTimeField(default=timezone.now)
 	user_has_seen = models.BooleanField(default=False)
 
@@ -77,3 +78,6 @@ class MessageModel(models.Model):
 	image = models.ImageField(upload_to='uploads/message_photos', blank=True, null=True)
 	date = models.DateTimeField(default=timezone.now)
 	is_read = models.BooleanField(default=False)
+
+class Image(models.Model):
+	image = models.ImageField(upload_to='uploads/post_photos', blank=True, null=True)

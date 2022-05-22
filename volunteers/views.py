@@ -1,46 +1,58 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.models import User
 from django.db.models import Q
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views import View
-from .models import Post, Comment, UserProfile, Notification, ThreadModel, User, MessageModel
+from .models import Post, Comment, UserProfile, Notification, ThreadModel, MessageModel
 from .forms import PostForm, CommentForm, ThreadForm, MessageForm
 from django.views.generic.edit import UpdateView, DeleteView
 # Create your views here.
 
 
 class PostListView(LoginRequiredMixin, View):
-
     def get(self, request, *args, **kwargs):
-        # get the id of the current user
         logged_in_user = request.user
         posts = Post.objects.filter(
             author__profile__followers__in=[logged_in_user.id]
         ).order_by('-created_on')
         form = PostForm()
+
         context = {
             'post_list': posts,
             'form': form,
         }
-        return render(request, 'volunteers/post-list.html', context)
+
+        return render(request, 'social/post_list.html', context)
 
     def post(self, request, *args, **kwargs):
-
+        logged_in_user = request.user
         posts = Post.objects.filter(
-            author__profile__followers__in=[request.user.id]
+            author__profile__followers__in=[logged_in_user.id]
         ).order_by('-created_on')
         form = PostForm(request.POST, request.FILES)
+        files = request.FILES.getlist('image')
 
         if form.is_valid():
             new_post = form.save(commit=False)
             new_post.author = request.user
             new_post.save()
-            context = {
-                'post_list': posts,
-                'form': form,
-            }
-            return render(request, 'volunteers/post-list.html', context)
+
+            for f in files:
+                img = Image(image=f)
+                img.save()
+                new_post.image.add(img)
+
+            new_post.save()
+
+        context = {
+            'post_list': posts,
+            'form': form,
+        }
+        
+        return render(request, 'volunteers/post-list.html', context)
 
 
 class PostDetailView(LoginRequiredMixin, View):
@@ -355,6 +367,16 @@ class FollowNotification(View):
 
         return redirect('profile', pk=profile_pk)
 
+class ThreadNotification(View):
+    def get(self, request, notification_pk, object_pk, *args, **kwargs):
+        notification = Notification.objects.get(pk=notification_pk)
+        thread = ThreadModel.objects.get(pk=object_pk)
+
+        notification.user_has_seen = True
+        notification.save()
+
+        return redirect('thread', pk=object_pk)
+        
 class RemoveNotification(View):
     def delete(self, request, notification_pk, *args, **kwargs):
         notification = Notification.objects.get(pk=notification_pk)
@@ -389,25 +411,26 @@ class CreateThread(View):
 
         username = request.POST.get('username')
 
-        # try:
-        receiver = User.objects.get(username=username)
-        if ThreadModel.objects.filter(user=request.user, receiver=receiver).exists():
-            thread = ThreadModel.objects.filter(user=request.user, receiver=receiver)[0]
-            return redirect('thread', pk=thread.pk)
-        elif ThreadModel.objects.filter(user=receiver, receiver=request.user).exists():
-            thread = ThreadModel.objects.filter(user=receiver, receiver=request.user)[0]
-            return redirect('thread', pk=thread.pk)
+        try:
+            receiver = User.objects.get(username=username)
+            if ThreadModel.objects.filter(user=request.user, receiver=receiver).exists():
+                thread = ThreadModel.objects.filter(user=request.user, receiver=receiver)[0]
+                return redirect('thread', pk=thread.pk)
+            elif ThreadModel.objects.filter(user=receiver, receiver=request.user).exists():
+                thread = ThreadModel.objects.filter(user=receiver, receiver=request.user)[0]
+                return redirect('thread', pk=thread.pk)
 
-        if form.is_valid():
-            thread = ThreadModel(
-                user=request.user,
-                receiver=receiver
-            )
-            thread.save()
+            if form.is_valid():
+                thread = ThreadModel(
+                    user=request.user,
+                    receiver=receiver
+                )
+                thread.save()
 
-            return redirect('thread', pk=thread.pk)
-        # except:
-        return redirect('create-thread')
+                return redirect('thread', pk=thread.pk)
+        except:
+            messages.error(request, 'Invalid username')
+            return redirect('create-thread')
 
 
 class ThreadView(View):
@@ -439,6 +462,14 @@ class CreateMessage(View):
             message.sender_user = request.user
             message.receiver_user = receiver
             message.save()
+        # if form.is_valid():
+        #     message = MessageModel(
+        #     thread=thread,
+        #     sender_user=request.user,
+        #     receiver_user=receiver,
+        #     body=request.POST.get('message'))
+        #     message.save()
+        
 
         notification = Notification.objects.create(
             notification_type=4,

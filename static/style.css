@@ -192,7 +192,6 @@
 .inbox-icon {
 	color: #333;
 	transition: 0.5s;
-	margin-left: 5px;
 }
 
 .inbox-icon:hover {
@@ -209,14 +208,27 @@
 	background-color: #f3f3f3;
 	border-radius: 30px;
 	padding: 10px 25px;
-	width: 25%;
+	width: 35%;
 }
 
 .received-message {
 	background-color: rgb(1, 196, 255);
-	color: #fff;
+	color: rgb(251, 75, 75);
 	border-radius: 30px;
 	padding: 10px 25px;
-	width: 25%;
-	float: right;
+	width: 35%;
+}
+.message-receiver-container {
+	margin-left: auto;
+	margin-right: 0;
+}
+
+.message-image {
+	border-radius: 10px;
+	max-width: 35%;
+	height: auto;
+}
+
+.inbox-icon {
+	margin-right: 5px;
 }
