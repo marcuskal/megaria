@@ -18,6 +18,9 @@
                     </a>
                     <p class="post-text">
                         <a class="text-primary post-link" href="{% url 'profile' post.author.profile.pk %}">@{{ post.author }}</a> {{ post.created_on }}
+                        {% if post.image %}
+                        <img src="{{ post.image.url }}" class="post-image h-100" />
+                      {% endif %}
                     </p>
                 </div>
                 {% if request.user == post.author %}

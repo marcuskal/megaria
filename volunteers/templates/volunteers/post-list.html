@@ -1,6 +1,7 @@
 {% extends 'landing/base.html' %}
 {% load crispy_forms_tags %}
 
+
 {% block content %}
     <div class="container">
         <div class="row justify-content-center mt-3">
@@ -12,7 +13,7 @@
 
         <div class="row justify-content-center mt-3 mb-5">
             <div class="col-md-3 col-sm-12 border-bottom">
-                <form action="" method="post">
+                <form action="" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form | crispy}}
                 
@@ -36,6 +37,9 @@
 
                 </div>
                 <div class="position-relative">
+                    {% if post.image %}
+                  <img src="{{ post.image.url }}" class="post-image h-100" />
+                {% endif %}
                     <p>{{ post.body }}</p>
                     <a href="{% url 'post-detail' post.pk %}" class="stretched-link"></a>
                 </div>
