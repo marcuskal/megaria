@@ -43,6 +43,9 @@ class PostListView(LoginRequiredMixin, View):
             new_post = form.save(commit=False)
             new_post.author = request.user
             new_post.save()
+            
+
+            new_post.create_tags()
 
             for f in files:
                 img = Image(image=f)
@@ -86,6 +89,8 @@ class PostDetailView(LoginRequiredMixin, View):
             new_comment.author = request.user
             new_comment.post = post
             new_comment.save()
+
+            new_comment.create_tags()
 
         comments = Comment.objects.filter(post=post).order_by('-created_on')
         notification = Notification.objects.create(notification_type=2, from_user=request.user, to_user=post.author, post=post)
@@ -506,3 +511,11 @@ class SharedPostView(View):
             new_post.save()
 
        return redirect('post-list')
+
+class Explore(View):
+    def get(self, request, *atgs, **kwargs):
+        query = self.request.GET.get('query')
+        tag = Tag.objects.filter(name=query).first()
+
+        if tag:
+            posts = Post.objects.filter(tags__in =[tag])
