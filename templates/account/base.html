@@ -1,13 +1,25 @@
+{% load static %}
+{% load crispy_forms_tags %}
+
 <!DOCTYPE html>
 <html>
   <head>
-
+ <!-- Required meta tags -->
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1">                 
+ <!-- Bootstrap CSS -->
+ <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css'>                       
+ <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+ <!-- <script src="https://use.fontawesome.com/76cdd6008c.js"></script>  -->
+<link href="{% static 'style.css' %}" rel="stylesheet">
     
     <title>{% block head_title %}{% endblock %}</title>
     {% block extra_head %}
     {% endblock %}
   </head>
   <body>
+    <div class="container">
+
     {% block body %}
 
     {% if messages %}
@@ -22,15 +34,15 @@
     {% endif %}
 
     <div>
-      <strong>Menu:</strong>
+      <!-- <strong>Menu:</strong> -->
       <ul>
-        {% if user.is_authenticated %}
+        <!-- {% if user.is_authenticated %}
         <li><a href="{% url 'account_email' %}">Change E-mail</a></li>
         <li><a href="{% url 'account_logout' %}">Sign Out</a></li>
-        {% else %}
-        <li><a href="{% url 'account_login' %}">Sign In</a></li>
-        <li><a href="{% url 'account_signup' %}">Sign Up</a></li>
-        {% endif %}
+        {% else %} -->
+        <!-- <li><a href="{% url 'account_login' %}">Sign In</a></li>
+        <li><a href="{% url 'account_signup' %}">Sign Up</a></li> -->
+        <!-- {% endif %} -->
       </ul>
     </div>
     {% block content %}
@@ -38,5 +50,8 @@
     {% endblock %}
     {% block extra_body %}
     {% endblock %}
+  </div>
+  
   </body>
+  
 </html>

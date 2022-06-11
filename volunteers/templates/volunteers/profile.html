@@ -16,14 +16,14 @@
                 <h3 class="py-4">{{ profile.name }}
                     <span>
                         {% if request.user == user %}
-                            <a href="{% url 'profile-edit' profile.pk %}" class="edit-color"><i class="far fa-edit"></i></a>
+                            <a href="{% url 'profile-edit' profile.pk %}" class="edit-color"><i class="fa fa-edit"></i></a>
                         {% endif %}
                     </span>
                     {% else %}
                     <h3 class="py-4">{{ user.username }}
                         <span>
                             {% if request.user == user %}
-                                <a href="{% url 'profile-edit' profile.pk %}" class="edit-color"><i class="far fa-edit"></i></a>
+                                <a href="{% url 'profile-edit' profile.pk %}" class="edit-color"><i class="fa fa-edit"></i></a>
                             {% endif %}
                         </span>
                     </h3>
@@ -101,7 +101,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">
                     <button class="remove-default-btn" type="submit">
-                        <i class="far fa-thumbs-up"> <span>{{ post.likes.all.count }}</span></i>
+                        <i class="fa fa-thumbs-up"> <span>{{ post.likes.all.count }}</span></i>
                     </button>
                 </form>
 
@@ -109,7 +109,7 @@
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">
                     <button class="remove-default-btn" type="submit">
-                        <i class="far fa-thumbs-down"> <span>{{ post.dislikes.all.count }}</span></i>
+                        <i class="fa fa-thumbs-down"> <span>{{ post.dislikes.all.count }}</span></i>
                     </button>
                 </form>
         </div>

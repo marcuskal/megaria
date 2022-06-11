@@ -7,8 +7,8 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views import View
-from .models import Post, Comment, UserProfile, Notification, ThreadModel, MessageModel, Image
-from .forms import PostForm, CommentForm, ThreadForm, MessageForm, ShareForm
+from .models import Post, Comment, UserProfile, Notification, ThreadModel, MessageModel, Image, Tag
+from .forms import PostForm, CommentForm, ThreadForm, MessageForm, ShareForm, ExploreForm
 from django.views.generic.edit import UpdateView, DeleteView
 # Create your views here.
 
@@ -43,7 +43,6 @@ class PostListView(LoginRequiredMixin, View):
             new_post = form.save(commit=False)
             new_post.author = request.user
             new_post.save()
-            
 
             new_post.create_tags()
 
@@ -93,7 +92,8 @@ class PostDetailView(LoginRequiredMixin, View):
             new_comment.create_tags()
 
         comments = Comment.objects.filter(post=post).order_by('-created_on')
-        notification = Notification.objects.create(notification_type=2, from_user=request.user, to_user=post.author, post=post)
+        notification = Notification.objects.create(
+            notification_type=2, from_user=request.user, to_user=post.author, post=post)
 
         context = {
             'post': post,
@@ -191,7 +191,8 @@ class AddFollower(LoginRequiredMixin, View):
         profile = UserProfile.objects.get(pk=pk)
         profile.followers.add(request.user)
 
-        notification = Notification.objects.create(notification_type=3, from_user=request.user, to_user=profile.user)
+        notification = Notification.objects.create(
+            notification_type=3, from_user=request.user, to_user=profile.user)
         return redirect('profile', pk=profile.pk)
 
 
@@ -202,18 +203,20 @@ class RemoveFollower(LoginRequiredMixin, View):
 
         return redirect('profile', pk=profile.pk)
 
+
 class AddLike(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         post = Post.objects.get(pk=pk)
 
         is_dislike = False
 
-        for dislike in post.dilikes.all():
+        for dislike in post.dislikes.all():
             if dislike == request.user:
                 is_dislike = True
-                break 
+                break
+
         if is_dislike:
-            post.dilikes.remove(request.user)
+            post.dislikes.remove(request.user)
 
         is_like = False
 
@@ -223,36 +226,43 @@ class AddLike(LoginRequiredMixin, View):
                 break
         if not is_like:
             post.likes.add(request.user)
-            notification = Notification.objects.create(notification_type=1, from_user=request.user, to_user=post.author, post=post)
+            notification = Notification.objects.create(
+                notification_type=1, from_user=request.user, to_user=post.author, post=post)
 
         if is_like:
             post.likes.remove(request.user)
         next = request.POST.get('next', '/')
         return HttpResponseRedirect(next)
+
+
 class AddDislike(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
         post = Post.objects.get(pk=pk)
 
         is_like = False
-        
+
         for like in post.likes.all():
             if like == request.user:
                 is_like = True;
                 break
         if is_like:
            post.likes.remove(request.user)
+
         is_dislike = False
 
-        for dislike in post.dilikes.all():
+        for dislike in post.dislikes.all():
             if dislike == request.user:
                 is_dislike = True
                 break
+
         if not is_dislike:
-            post.dilikes.add(request.user)
+            post.dislikes.add(request.user)
         if is_dislike:
             post.dilikes.remove(request.user)
+
         next = request.POST.get('next', '/')
         return HttpResponseRedirect(next)
+
 
 class AddCommentLike(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
@@ -277,14 +287,16 @@ class AddCommentLike(LoginRequiredMixin, View):
 
         if not is_like:
             comment.likes.add(request.user)
-            notification = Notification.objects.create(notification_type=1, from_user=request.user, to_user=comment.author, comment=comment)
+            notification = Notification.objects.create(
+                notification_type=1, from_user=request.user, to_user=comment.author, comment=comment)
 
         if is_like:
             comment.likes.remove(request.user)
 
         next = request.POST.get('next', '/')
         return HttpResponseRedirect(next)
-        
+
+
 class CommentReplyView(LoginRequiredMixin, View):
     def post(self, request, post_pk, pk, *args, **kwargs):
         post = Post.objects.get(pk=post_pk)
@@ -297,9 +309,11 @@ class CommentReplyView(LoginRequiredMixin, View):
             new_comment.post = post
             new_comment.parent = parent_comment
             new_comment.save()
-            notification = Notification.objects.create(notification_type=2, from_user=request.user, to_user=parent_comment.author, comment=new_comment)
+            notification = Notification.objects.create(
+                notification_type=2, from_user=request.user, to_user=parent_comment.author, comment=new_comment)
 
         return redirect('post-detail', pk=post_pk)
+
 
 class AddCommentDislike(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
@@ -331,6 +345,7 @@ class AddCommentDislike(LoginRequiredMixin, View):
         next = request.POST.get('next', '/')
         return HttpResponseRedirect(next)
 
+
 class UserSearch(View):
     def get(self, request, *args, **kwargs):
         query = self.request.GET.get('query')
@@ -343,7 +358,7 @@ class UserSearch(View):
         }
 
         return render(request, 'volunteers/serach.html', context)
-    
+
 
 class ListFollowers(View):
     def get(self, request, pk, *args, **kwargs):
@@ -357,6 +372,7 @@ class ListFollowers(View):
 
         return render(request, 'volunteers/followers_list.html', context)
 
+
 class PostNotification(View):
     def get(self, request, notification_pk, post_pk, *args, **kwargs):
         notification = Notification.objects.get(pk=notification_pk)
@@ -366,6 +382,7 @@ class PostNotification(View):
         notification.save()
 
         return redirect('post-detail', pk=post_pk)
+
 
 class FollowNotification(View):
     def get(self, request, notification_pk, profile_pk, *args, **kwargs):
@@ -377,6 +394,7 @@ class FollowNotification(View):
 
         return redirect('profile', pk=profile_pk)
 
+
 class ThreadNotification(View):
     def get(self, request, notification_pk, object_pk, *args, **kwargs):
         notification = Notification.objects.get(pk=notification_pk)
@@ -386,7 +404,8 @@ class ThreadNotification(View):
         notification.save()
 
         return redirect('thread', pk=object_pk)
-        
+
+
 class RemoveNotification(View):
     def delete(self, request, notification_pk, *args, **kwargs):
         notification = Notification.objects.get(pk=notification_pk)
@@ -396,15 +415,18 @@ class RemoveNotification(View):
 
         return HttpResponse('Success', content_type='text/plain')
 
+
 class ListThreads(View):
     def get(self, request, *args, **kwargs):
-        threads = ThreadModel.objects.filter(Q(user=request.user) | Q(receiver=request.user))
+        threads = ThreadModel.objects.filter(
+            Q(user=request.user) | Q(receiver=request.user))
 
         context = {
             'threads': threads
         }
 
         return render(request, 'volunteers/inbox.html', context)
+
 
 class CreateThread(View):
     def get(self, request, *args, **kwargs):
@@ -424,10 +446,12 @@ class CreateThread(View):
         try:
             receiver = User.objects.get(username=username)
             if ThreadModel.objects.filter(user=request.user, receiver=receiver).exists():
-                thread = ThreadModel.objects.filter(user=request.user, receiver=receiver)[0]
+                thread = ThreadModel.objects.filter(
+                    user=request.user, receiver=receiver)[0]
                 return redirect('thread', pk=thread.pk)
             elif ThreadModel.objects.filter(user=receiver, receiver=request.user).exists():
-                thread = ThreadModel.objects.filter(user=receiver, receiver=request.user)[0]
+                thread = ThreadModel.objects.filter(
+                    user=receiver, receiver=request.user)[0]
                 return redirect('thread', pk=thread.pk)
 
             if form.is_valid():
@@ -479,7 +503,6 @@ class CreateMessage(View):
         #     receiver_user=receiver,
         #     body=request.POST.get('message'))
         #     message.save()
-        
 
         notification = Notification.objects.create(
             notification_type=4,
@@ -488,6 +511,7 @@ class CreateMessage(View):
             thread=thread
         )
         return redirect('thread', pk=pk)
+
 
 class SharedPostView(View):
     def post(self, request, pk, *args, **kwargs):
@@ -512,10 +536,44 @@ class SharedPostView(View):
 
        return redirect('post-list')
 
+
 class Explore(View):
     def get(self, request, *atgs, **kwargs):
+        explore_form = ExploreForm()
         query = self.request.GET.get('query')
         tag = Tag.objects.filter(name=query).first()
 
         if tag:
-            posts = Post.objects.filter(tags__in =[tag])
+            posts = Post.objects.filter(tags__in=[tag])
+        else:
+            posts = Post.objects.all()
+
+        context = {
+            'tag': tag,
+            'posts': posts,
+            'explore_form': explore_form,
+        }
+
+        return render(request, 'volunteers/explore.html', context)
+
+    def post(self, request, *args, **kwargs):
+        explore_form = ExploreForm(request.POST)
+        if explore_form.is_valid():
+            query = explore_form.cleaned_data['query']
+            tag = Tag.objects.filter(name=query).first()
+
+            posts = None
+            if tag:
+                 posts = Post.objects.filter(tags__in=[tag])
+
+            if posts:
+                context = {
+                    'tag': tag,
+                    'posts': posts,
+                    }
+            else:
+                context = {
+                    'tag': tag,
+                    }
+            return HttpResponseRedirect(f'/volunteers/explore?query={query}')
+        return HttpResponseRedirect('/volunteers/explore')    
