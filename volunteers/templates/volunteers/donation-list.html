@@ -1,0 +1,87 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container map">
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <h5>Add a Post!</h5>
+        </div>
+    </div>
+    <div id='map' style='width: auto; height: 300px;'></div>
+
+    <div class="row justify-content-center mt-3 mb-5">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form | crispy }}
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success mt-3">Submit!</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% for donation in donation_list %}
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom position-relative">
+            <div>
+                <a href="{% url 'profile' post.author.profile.pk %}">
+                    <img class="round-circle post-img" height="30" width="30" src="{{ post.author.profile.picture.url }}" />
+                </a>
+                <p class="post-text">
+                    <a class="text-primary post-link" href="{% url 'profile' post.author.profile.pk %}">@{{ donation.author }}</a> {{ donation.created_on }}
+                </p>
+            </div>
+
+           
+            <div class="shared-post position-relative pt-3">
+                {% if donation.image.count > 0 %}
+                  <div class="row">
+                    {% for img in donation.image.all %}
+                        <div class="col-md-4 col-xs-12">
+                            <img src="{{ img.image.url }}" class="post-image" />
+                        </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+                <div class="body">
+                    <p>{{ donation.body }}</p>
+                </div>
+                <a href="{% url 'post-detail' post.pk %}" class="stretched-link"></a>
+            </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1Ijoia2Fsa2lkYW4wOSIsImEiOiJjbDNpYno1NXgwb2R2M2NueG1zb2RhaGU4In0.gkhnMaooBBuE9qMmIxuRwQ';
+
+    const map = new mapboxgl.Map({
+        container: 'map', // container id
+        style: 'mapbox://styles/mapbox/satellite-v9',
+        center: [-96, 37.8], // starting position
+        zoom: 3 // starting zoom
+    });
+
+    // Add geolocate control to the map.
+    // Initialize the geolocate control.
+    const geolocate = new mapboxgl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true
+    });
+    // Add the control to the map.
+    map.addControl(geolocate);
+    map.on("load", function () {
+        geolocate.trigger(); // add this if you want to fire it by code instead of the button
+    });
+    geolocate.on("geolocate", locateUser);
+
+    function locateUser(e) {
+        console.log("A geolocate event has occurred.");
+        console.log("lng:" + e.coords.longitude + ", lat:" + e.coords.latitude);
+    }
+</script>
+{% endblock content %}

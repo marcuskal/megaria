@@ -7,8 +7,8 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views import View
-from .models import Post, Comment, UserProfile, Notification, ThreadModel, MessageModel, Image, Tag
-from .forms import PostForm, CommentForm, ThreadForm, MessageForm, ShareForm, ExploreForm
+from .models import Post, Comment, UserProfile, Notification, ThreadModel, MessageModel, Image, Tag, Donation
+from .forms import PostForm, CommentForm, ThreadForm, MessageForm, ShareForm, ExploreForm, DonationForm
 from django.views.generic.edit import UpdateView, DeleteView
 # Create your views here.
 
@@ -61,6 +61,50 @@ class PostListView(LoginRequiredMixin, View):
 
         return render(request, 'volunteers/post-list.html', context)
 
+class DonationListView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        logged_in_user = request.user
+        donations = Donation.objects.filter(
+            author__profile__followers__in=[logged_in_user.id]
+        )
+        form = DonationForm()
+
+        context = {
+            'donation_list': donations,
+            'form': form,
+        }
+
+        return render(request, 'volunteers/donation-list.html', context)
+
+    def post(self, request, *args, **kwargs):
+        logged_in_user = request.user
+        donations = Donation.objects.filter(
+            author__profile__followers__in=[logged_in_user.id]
+        )
+        form = DonationForm(request.POST, request.FILES)
+        files = request.FILES.getlist('image')
+
+
+        if form.is_valid():
+            new_donation = form.save(commit=False)
+            new_donation.author = request.user
+            new_donation.save()
+
+            new_donation.create_tags()
+
+            for f in files:
+                img = Image(image=f)
+                img.save()
+                new_donation.image.add(img)
+
+            new_donation.save()
+
+        context = {
+            'donation_list': donations,
+            'form': form,
+        }
+
+        return render(request, 'volunteers/donation-list.html', context)
 
 class PostDetailView(LoginRequiredMixin, View):
     model = Post
@@ -102,6 +146,20 @@ class PostDetailView(LoginRequiredMixin, View):
         }
         return render(request, 'volunteers/post-detail.html', context)
 
+
+class DonationDetailView(LoginRequiredMixin, View):
+    model = Donation
+    template_name = "TEMPLATE_NAME"
+    # Dispalying a single specific post, in detail view using primary key of the post
+
+    def get(self, request, pk, *args, **kwargs):
+        donation = Donation.objects.get(pk=pk)
+
+
+        context = {
+            'donation': donation,
+        }
+        return render(request, 'volunteers/donation-detail.html', context)
 
 class PostEditView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post

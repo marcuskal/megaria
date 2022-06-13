@@ -3,6 +3,11 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+# from .location import getLocation
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+import time
 
 
 class Post(models.Model):
@@ -46,6 +51,17 @@ class Post(models.Model):
 
     class Meta:
         ordering = ['-created_on', '-shared_on']
+
+
+class Donation(models.Model):
+
+    body = models.TextField(blank=True, null=True)
+    image = models.ManyToManyField('Image', blank=True)
+    created_on = models.DateTimeField(default=timezone.now)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    address = models.TextField(blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
 
 
 class Comment(models.Model):
@@ -148,5 +164,7 @@ class MessageModel(models.Model):
 class Image(models.Model):
     image = models.ImageField(
         upload_to='uploads/post_photos', blank=True, null=True)
+
+
 class Tag(models.Model):
-	name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)

@@ -24,27 +24,12 @@
         <ul class="navbar-nav mr-auto">
           
           <li class="nav-item">
-            <a class="nav-link" href="#"><i class="fa fa-dollar-sign">Donations</i>
+            <a class="nav-link" href="{% url 'explore' %}"><i class="fa fa-wpexplorer text-dark" aria-hidden="true"><span class="m-1">Explore</span></i>
             </a>
           </li>
           <li class="nav-item">
-            
+            <a class="nav-link" href="{% url 'donation-list' %}"><i class="fa fa-dollar-sign text-dark">Donations</i>
             </a>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Dropdown
-            </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="#">Action</a>
-              <a class="dropdown-item" href="#">Another action</a>
-              <div class="dropdown-divider"></div>
-              <a class="dropdown-item" href="#">Something else here</a>
-            </div>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link disabled" href="#">Disabled</a>
-          </li>
         </ul>
       </div>
 
@@ -75,18 +60,12 @@
           </li> -->
         </ul>
         
-        <form class="d-flex mr-2" method="GET" action="{% url 'profile-search' %}">
-            <div class="input-group">
-                <span class="input-group-text" id="basic-addon1">@</span>
-                <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" name="query" value="{{ request.GET.query }}">
-                <button class="remove-deafult-btn" type="submit">
-                <i class="fa fa-search"></i>
-                </button>
-              </div>
-        </form>
+        
         <!-- <img src="{{ profile.picture.url }}" class="rounded-circle" width="50" height="40" /> -->
         {% if user.is_authenticated %}
         <div class="nav-item">
+          {% show_notifications %}
+
          </div>
         <div class="nav-item dropdown">
           
@@ -103,11 +82,18 @@
         <div class="nav-item inbox-icon-container">
           <a href="{% url 'inbox' %}" class="inbox-icon"><i class="fa fa-paper-plane"></i></a>
         </div>
-
-        <div class="nav-item">
-          {% show_notifications %}
-        </div>
         {% endif %}
+
+        <form class="d-flex mr-2" method="GET" action="{% url 'profile-search' %}">
+          <div class="input-group">
+              <span class="input-group-text" id="basic-addon1">@</span>
+              <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1" name="query" value="{{ request.GET.query }}">
+              <button class="remove-deafult-btn" type="submit">
+              <i class="fa fa-search"></i>
+              </button>
+            </div>
+      </form>
+
       </div>
     </div>
   </nav>

@@ -1,10 +1,12 @@
 from django.urls import path
 from .views import (
-    PostListView, PostDetailView, PostEditView, PostDeleteView, CommentDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, AddLike, AddDislike, UserSearch, ListFollowers, AddCommentLike, AddCommentDislike, CommentReplyView, PostNotification, FollowNotification, RemoveNotification, CreateThread, ListThreads, ThreadView, CreateThread, CreateMessage, ThreadNotification, SharedPostView, Explore)
+    PostListView, PostDetailView, PostEditView, PostDeleteView, CommentDeleteView, ProfileView, ProfileEditView, AddFollower, RemoveFollower, AddLike, AddDislike, UserSearch, ListFollowers, AddCommentLike, AddCommentDislike, CommentReplyView, PostNotification, FollowNotification, RemoveNotification, CreateThread, ListThreads, ThreadView, CreateThread, CreateMessage, ThreadNotification, SharedPostView, Explore, DonationListView, DonationDetailView)
 
 urlpatterns = [
     path('', PostListView.as_view(), name='post-list'),
     path('explore/', Explore.as_view(), name='explore'),
+    path('donation/', DonationListView.as_view(), name='donation-list'),
+    path('donation/<int:pk>/', DonationDetailView.as_view(), name='donation-detail'),
     path('post/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
     path('post/edit/<int:pk>/', PostEditView.as_view(), name='post-edit'),
     path('post/delete/<int:pk>/', PostDeleteView.as_view(), name='post-delete'),
